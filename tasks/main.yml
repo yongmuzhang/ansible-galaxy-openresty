@@ -1,2 +1,110 @@
 ---
 # tasks file for ansible-galaxy-openresty
+- name: Add Openresty Apt signing key
+  apt_key: url=https://openresty.org/package/pubkey.gpg state=present
+  become: true
+  become_user: root
+  become_method: sudo
+  tags:
+    - nginx
+
+- name: apt-get update
+  apt: update_cache=yes
+  tags:
+    - nginx
+
+- name: Install dependencies
+  apt: pkg={{ item }} update_cache=yes cache_valid_time=3600
+  with_items:
+    - libpcre3-dev
+    - libssl-dev
+    - perl
+    - make
+    - build-essential
+    - curl
+  tags:
+    - nginx
+
+- name: install software-properties-common
+  apt: name=software-properties-common state=present
+  become: true
+  become_user: root
+  become_method: sudo
+  tags:
+    - nginx
+
+- name: Add Openresty Apt Repository
+  apt_repository: repo='deb http://openresty.org/package/ubuntu xenial main'
+  become: true
+  become_user: root
+  become_method: sudo
+  tags:
+    - nginx
+
+- name: apt-get update
+  apt: update_cache=yes
+  tags:
+    - nginx
+
+- name: Install Openresty
+  apt: name=openresty state=present
+  become: true
+  become_user: root
+  become_method: sudo
+  tags:
+    - nginx
+
+- name: create log directory
+  file: path=/opt/log/nginx/ state=directory  owner=www-data group=www-data mode=755
+  tags:
+    - nginx
+
+- name: ensure log directory perm
+  file: path=/opt/log/nginx state=touch mode=755
+  tags:
+    - nginx
+
+- name: ensure log directory perm
+  file: path=/opt/log state=touch mode=755
+  tags:
+    - nginx
+
+- name: create htdocs directory
+  file: path=/opt/htdocs state=directory owner=www-data group=www-data mode=755
+  tags:
+    - nginx
+
+- name: create conf.d directory
+  file: path=/etc/openresty/conf.d state=directory owner=www-data group=www-data mode=755
+  tags:
+    - nginx
+
+- name: copy default document root
+  copy: src=opt/htdocs/default/ dest=/opt/htdocs/default/ owner=www-data group=www-data mode=755
+  tags:
+    - nginx
+
+- name: create nginx config
+  template: src=etc/nginx/nginx.conf dest=/etc/openresty/nginx.conf
+  tags:
+    - nginx
+
+- name: copy fastcgi params
+  copy: src=etc/nginx/fastcgi_params dest=/etc/openresty/fastcgi_params
+  tags:
+    - nginx
+
+- name: copy nginx sites-enabled config
+  copy: src=etc/nginx/sites-enabled/ dest=/etc/openresty/sites-enabled/
+  tags:
+    - nginx
+
+- name: restart nginx
+  service: name=openresty state=restarted
+  tags:
+    - nginx
+
+- name: copy logrotate config
+  copy: src=etc/logrotate.d/nginx dest=/etc/logrotate.d/nginx
+  tags:
+    - nginx
