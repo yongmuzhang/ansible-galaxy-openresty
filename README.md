@@ -1,3 +1,17 @@
+How To Use
+=========
+Add the following code to the requirements.yml
+```
+- src: git+git@github.com:yongmuzhang/ansible-galaxy-openresty.git
+  version: a8s92w0039wjs039dds983dd83(commit id)
+  name: nginx
+```
+
+Install
+```
+ansible-galaxy install -r requirements.yml
+```
+
 Role Name
 =========
 
